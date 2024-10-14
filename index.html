@@ -28,7 +28,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
             width: 100%;
-            max-width: 400px;
+            max-width: 600px;
         }
 
         h1 {
@@ -70,6 +70,24 @@
             word-wrap: break-word;
         }
 
+        #calculation-steps {
+            margin-top: 1.5rem;
+            text-align: left;
+            font-size: 1rem;
+        }
+
+        .step {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .strike {
+            text-decoration: line-through;
+            color: #888;
+        }
+
         @media (min-width: 768px) {
             .container {
                 padding: 3rem;
@@ -90,7 +108,7 @@
 
         @media (min-width: 1024px) {
             .container {
-                max-width: 500px;
+                max-width: 700px;
             }
 
             h1 {
@@ -114,9 +132,14 @@
         <input type="text" id="personB" placeholder="Enter Name of Second Person">
         <button onclick="calculateFriendship()">Calculate</button>
         <div id="result"></div>
+        <div id="calculation-steps"></div>
     </div>
 
     <script>
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
         function countLetters(personA, personB) {
             let result = [];
             let personBList = personB.split('');
@@ -137,6 +160,7 @@
         }
 
         function combinePairs(arr) {
+            let steps = [arr];
             while (arr.length > 2) {
                 let newArr = [];
                 let i = 0, j = arr.length - 1;
@@ -152,12 +176,13 @@
                 }
 
                 arr = newArr;
+                steps.push(arr);
             }
 
-            return arr;
+            return steps;
         }
 
-        function calculateFriendship() {
+        async function calculateFriendship() {
             let personA = document.getElementById('personA').value.toLowerCase();
             let personB = document.getElementById('personB').value.toLowerCase();
 
@@ -166,8 +191,40 @@
                 return;
             }
 
+            let stepsDiv = document.getElementById('calculation-steps');
+            stepsDiv.innerHTML = '';
+
+            // Step 1: Display names side by side
+            let step1 = document.createElement('div');
+            step1.className = 'step';
+            step1.innerHTML = `<strong>Step 1:</strong> Names side by side<br>${personA} | ${personB}`;
+            stepsDiv.appendChild(step1);
+            await sleep(1000);
+
+            // Step 2: Count letters
             let resultArray = countLetters(personA, personB);
-            let finalArray = combinePairs(resultArray);
+            let step2 = document.createElement('div');
+            step2.className = 'step';
+            step2.innerHTML = `<strong>Step 2:</strong> Count occurrences of each letter<br>${resultArray.join(', ')}`;
+            stepsDiv.appendChild(step2);
+            await sleep(1000);
+
+            // Step 3 and onwards: Combine pairs
+            let steps = combinePairs(resultArray);
+            for (let i = 1; i < steps.length; i++) {
+                let stepDiv = document.createElement('div');
+                stepDiv.className = 'step';
+                let prevStep = steps[i-1];
+                let currentStep = steps[i];
+                let strikeThroughHTML = prevStep.map((num, index) => 
+                    index < currentStep.length ? `<span class="strike">${num}</span>` : num
+                ).join(', ');
+                stepDiv.innerHTML = `<strong>Step ${i+2}:</strong> Combine pairs<br>${strikeThroughHTML}<br>↓<br>${currentStep.join(', ')}`;
+                stepsDiv.appendChild(stepDiv);
+                await sleep(1000);
+            }
+
+            let finalArray = steps[steps.length - 1];
             let percentage = finalArray.join('');
 
             document.getElementById('result').textContent = `Friendship Percentage: ${percentage}%`;
