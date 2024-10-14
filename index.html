@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friendship Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        input {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Friendship Calculator</h1>
+        <input type="text" id="personA" placeholder="Enter Name of First Person">
+        <input type="text" id="personB" placeholder="Enter Name of Second Person">
+        <button onclick="calculateFriendship()">Calculate</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function countLetters(personA, personB) {
+            let result = [];
+            let personBList = personB.split('');
+
+            for (let char of personA) {
+                if (personBList.includes(char)) {
+                    let countInA = personA.split(char).length - 1;
+                    let countInB = personBList.filter(x => x === char).length;
+                    result.push(countInA + countInB);
+                    personBList = personBList.filter(x => x !== char);
+                } else {
+                    result.push(1);
+                }
+            }
+
+            result.push(...Array(personBList.length).fill(1));
+            return result;
+        }
+
+        function combinePairs(arr) {
+            while (arr.length > 2) {
+                let newArr = [];
+                let i = 0, j = arr.length - 1;
+
+                while (i < j) {
+                    newArr.push(arr[i] + arr[j]);
+                    i++;
+                    j--;
+                }
+
+                if (i === j) {
+                    newArr.push(arr[i]);
+                }
+
+                arr = newArr;
+            }
+
+            return arr;
+        }
+
+        function calculateFriendship() {
+            let personA = document.getElementById('personA').value.toLowerCase();
+            let personB = document.getElementById('personB').value.toLowerCase();
+
+            if (!personA || !personB) {
+                alert('Please enter both names');
+                return;
+            }
+
+            let resultArray = countLetters(personA, personB);
+            let finalArray = combinePairs(resultArray);
+            let percentage = finalArray.join('');
+
+            document.getElementById('result').textContent = `Friendship Percentage: ${percentage}%`;
+        }
+    </script>
+</body>
+</html>
