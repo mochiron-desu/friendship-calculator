@@ -47,4 +47,6 @@ This project is licensed under the "Why Would Anyone Else Want This" License. Fe
 - Shoutout to all the real friends we lost while building this digital monstrosity.
 - Special thanks to the confetti. You're the real MVP.
 
+Now that you're clearly invested, go check it out here: [Friendship Calculator](https://mochiron-desu.github.io/friendship-calculator/)! Because nothing says "friendship" like a browser tab you'll immediately close. 👀🎉
+
 Now go forth and quantify those friendships! Remember, if the calculator says you're not friends, it must be true. The computer never lies! 🤖❤️
